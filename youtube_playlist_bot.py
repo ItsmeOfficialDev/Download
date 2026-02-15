@@ -13,8 +13,8 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Configuration - REPLACE THESE VALUES
-TELEGRAM_BOT_TOKEN = "YOUR_BOT_TOKEN_HERE"  # Get from @BotFather
+# Configuration - Get token from environment variable or set it here
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "YOUR_BOT_TOKEN_HERE")  # Get from @BotFather
 CHANNEL_ID = ""  # Leave empty, bot will ask for it or you can set it here
 
 # User state (no database needed)
