@@ -20,8 +20,8 @@ CHANNEL_ID = ""  # Leave empty, bot will ask for it or you can set it here
 # User state (no database needed)
 user_states = {}
 
-# Keep-alive function to prevent Render from sleeping
-async def keep_alive(application):
+# Keep-alive function to prevent Render from sleeping - FIXED VERSION
+async def keep_alive():
     """Sends a dummy message every 10 minutes to keep bot active"""
     while True:
         try:
@@ -275,12 +275,9 @@ def main():
     # Add error handler
     application.add_error_handler(error_handler)
     
-    # Start keep-alive task
-    application.job_queue.run_repeating(
-        lambda context: asyncio.create_task(keep_alive(application)),
-        interval=600,
-        first=10
-    )
+    # Start keep-alive task using asyncio directly - FIXED VERSION
+    loop = asyncio.get_event_loop()
+    loop.create_task(keep_alive())
     
     # Start bot
     print("🤖 Bot is starting...")
