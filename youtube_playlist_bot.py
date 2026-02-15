@@ -2,6 +2,7 @@ import os
 import logging
 import asyncio
 import shutil
+import threading
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 import yt_dlp
@@ -15,14 +16,13 @@ logger = logging.getLogger(__name__)
 
 # Configuration - Get token from environment variable or set it here
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "YOUR_BOT_TOKEN_HERE")  # Get from @BotFather
-CHANNEL_ID = ""  # Leave empty, bot will ask for it or you can set it here
 
 # User state (no database needed)
 user_states = {}
 
-# Keep-alive function to prevent Render from sleeping - FIXED VERSION
+# Keep-alive function to prevent Render from sleeping
 async def keep_alive():
-    """Sends a dummy message every 10 minutes to keep bot active"""
+    """Logs a message every 10 minutes to keep bot active"""
     while True:
         try:
             await asyncio.sleep(600)  # 10 minutes
@@ -264,6 +264,14 @@ def main():
         print("❌ ERROR: Please set your TELEGRAM_BOT_TOKEN in the script!")
         return
     
+    # Create and set event loop for Python 3.14 compatibility
+    try:
+        loop = asyncio.get_running_loop()
+    except RuntimeError:
+        # No running loop, create a new one
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+    
     # Create application
     application = Application.builder().token(TELEGRAM_BOT_TOKEN).build()
     
@@ -275,13 +283,14 @@ def main():
     # Add error handler
     application.add_error_handler(error_handler)
     
-    # Start keep-alive task using asyncio directly - FIXED VERSION
-    loop = asyncio.get_event_loop()
+    # Start keep-alive task using the event loop
     loop.create_task(keep_alive())
     
     # Start bot
     print("🤖 Bot is starting...")
     print("✅ Keep-alive feature enabled - bot will stay active on Render")
+    
+    # Run the bot
     application.run_polling(allowed_updates=Update.ALL_TYPES)
 
 if __name__ == '__main__':
